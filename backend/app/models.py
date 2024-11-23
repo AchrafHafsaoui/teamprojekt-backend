@@ -37,5 +37,14 @@ class Bus(Vehicle):
 
 
 
+class Station(Base):
+    __tablename__ = 'stations'
+
+    electric_capacity = Column(Float, nullable=False)
+    state_of_charge = Column(Float, nullable=False)
+    status = Column(String, nullable=False)
+    ocupied_stations = Column(String, nullable=False)
+
+
 
 
