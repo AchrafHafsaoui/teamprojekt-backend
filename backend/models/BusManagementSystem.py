@@ -1,66 +1,64 @@
-##### STILL UNDER WORK
-
-class Bus:
-
-    def __init__(self, license_plate: str, date_of_purchase: str, status: str, 
-                 state_of_charge: float, electric_capacity: float, seat_capacity: int):
+class Vehicle:
+    def __init__(self, license_plate: str, date_of_purchase: str, status: str, state_of_charge: float, electric_capacity: float, vehicle_type: str):
         self.license_plate = license_plate
         self.date_of_purchase = date_of_purchase
         self.status = status
         self.state_of_charge = state_of_charge
         self.electric_capacity = electric_capacity
-        self.seat_capacity = seat_capacity
+        self.vehicle_type = vehicle_type
 
-
-    #  delet the current station object to the database
-    def delete_from_database(self):
-        conn = self.db_manager.connect()
+    def save_to_database(self, db_manager):
+        conn = db_manager.connect()
         cur = conn.cursor()
-        # Delete the station record where the number matches
-        cur.execute("DELETE FROM buses WHERE number = ?", (self.number,))
+        cur.execute(
+            f"INSERT INTO vehicles (license_plate, date_of_purchase, status, state_of_charge, electric_capacity, vehicle_type) VALUES (?, ?, ?, ?, ?, ?)",
+            (self.license_plate, self.date_of_purchase, self.status, self.state_of_charge, self.electric_capacity, self.vehicle_type)
+        )
         conn.commit()
-        print(f"Bus '{self.number}' deleted from database.")
+        print(f"Vehicle '{self.license_plate}' saved to database.")
 
+    def delete_from_database(self, db_manager):
+        conn = db_manager.connect()
+        cur = conn.cursor()
+        cur.execute(
+            "DELETE FROM vehicles WHERE license_plate = ?",
+            (self.license_plate,)
+        )
+        conn.commit()
+        print(f"Vehicle '{self.license_plate}' deleted from database.")
 
-    # Edit any station attribute dynamically
-    def EditBus(self, param, value):    
-        conn = self.db_manager.connect()
+    def edit_attribute(self, db_manager, param, value):
         if hasattr(self, param):
             setattr(self, param, value)
-        cur = conn.cursor()
-        cur.execute(
-            f"UPDATE bus SET {param} = ? WHERE number = ?",
-            (value, self.number)
-        )
-        conn.commit()
-        print(f"Bus '{self.number}' updated: {param} = {value}")
-
-
-    # save the current bus object to the database
-    def save_to_database(self):
-        conn = self.db_manager.connect()
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO buses (license_plate, date_of_purchase, status, state_of_charge, electric_capacity, seat_capacity) VALUES (?, ?, ?, ?, ?, ?)",
-            (self.number, self.status, self.state_of_charge, self.electric_capacity)
-        )
-        conn.commit()
-        print(f"bus '{self.number}' saved to database.")
-
-    # Fetch a bus by parameter
-    def fetch_station_through_params(self, param, value):
-        conn = self.db_manager.connect()
-        cur = conn.cursor()
-        query = f"SELECT * FROM buses WHERE {param} = ?"
-        cur.execute(query, (value,))
-        rows = cur.fetchall()
-        if rows:
-            print("Found:")
-            for row in rows:
-                print(row)
+            conn = db_manager.connect()
+            cur = conn.cursor()
+            cur.execute(
+                f"UPDATE vehicles SET {param} = ? WHERE license_plate = ?",
+                (value, self.license_plate)
+            )
+            conn.commit()
+            print(f"Vehicle '{self.license_plate}' updated: {param} = {value}")
         else:
-            print(f"No bus found with {param} = {value}.")
+            print(f"Attribute {param} does not exist on Vehicle.")
 
+class Bus(Vehicle):
+    def __init__(self, license_plate: str, date_of_purchase: str, status: str, 
+                 state_of_charge: float, electric_capacity: float, seat_capacity: int):
+        super().__init__(license_plate, date_of_purchase, status, state_of_charge, electric_capacity, "Bus")
+        self.seat_capacity = seat_capacity
 
-    
-    
+    def save_to_database(self, db_manager):
+        super().save_to_database(db_manager)
+        conn = db_manager.connect()
+        cur = conn.cursor()
+        cur.execute(
+            f"INSERT INTO buses (license_plate, seat_capacity) VALUES (?, ?)",
+            (self.license_plate, self.seat_capacity)
+        )
+        conn.commit()
+        print(f"Bus '{self.license_plate}' additional data saved to database.")
+
+# Example Usage
+db_manager = ...  # Assume this is your database manager object
+bus = Bus("123-XYZ", "2023-01-01", "active", 80.0, 100.0, 50)
+bus.save_to_database(db_manager)
