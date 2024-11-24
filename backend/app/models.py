@@ -18,8 +18,8 @@ class Vehicle(Base):
     state_of_charge = Column(Float, nullable=False)
     status = Column(String, nullable=False)
     distance_left = Column(Float, nullable=True)
-    station_number = Column(int, nullable=True)
-    charging_point = Column(int, nullable=True)
+    station_number = Column(Integer, nullable=True)
+    charging_point = Column(Integer, nullable=True)
     coming_from = Column(String, nullable=True)
     going_to = Column(String, nullable=True)
 
@@ -40,6 +40,7 @@ class Bus(Vehicle):
 class Station(Base):
     __tablename__ = 'stations'
 
+    number = Column(Integer, unique=True, primary_key=True)
     electric_capacity = Column(Float, nullable=False)
     state_of_charge = Column(Float, nullable=False)
     status = Column(String, nullable=False)
