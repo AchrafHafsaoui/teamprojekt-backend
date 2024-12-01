@@ -61,29 +61,25 @@ updates = {
 vehicle = db.query(Vehicle).filter_by(license_plate='VEH1234').first()
 updated_vehicle = VehicleCRUD.update_vehicle(db, vehicle, updates)
 
+Rules for depot management (src= Charging Schedule for Load Peak Minimization on Large-Scale Electric Bus Depots; this is a reseach paper made in Hamburg for the Alsterdorf depot station managing over 127 buses doing 230 trips daily )
 
-for the db management we chose to go with db polymorfism from sqlalchemy library, this will help us have a parent group named vehicle where data will be saved, and in this db there we bill the many vehicle types(Bus and maybe other types of vehicles in our case), we have seen for now that the similarities are not too many(like seat capacity in our case) so we decided to put the data in a single file, but we can use table splitting, where we save only the shared between vehicles and save the difference(special charasteristics) in a split table where it is to joined with the specific table per vehicle type. Each method has pros and cons but for now this seems optimal for the time complexity and reliability.
+Route assigning:
 
-                     [ VEHICLE TABLE ] (Parent Table)
-                  +------------------------+
-                  | id(license plate) (PK)|
-                  | vehicle_type          |  <-- Discriminator column (e.g., 'Bus', 'Car')
-                  | shared_attribute_1    |  <-- Attributes shared across all vehicles
-                  | shared_attribute_2    |
-                  +------------------------+
-                              |
-                              +---------------------------------------+
-                              |                                       |
-                  [ BUS TABLE ] (Child Table)                [ CAR TABLE ] (Child Table)
-                  +------------------------+                 +------------------------+
-                  | id (FK to VEHICLE.id)  |                 | id (FK to VEHICLE.id)  |
-                  | seat_capacity          |                 | trunk_size             |
-                  | special_bus_feature    |                 | special_car_feature    |
-                  +------------------------+                 +------------------------+
+1. Bus cannot take a route if the expected state-of-charge (SoC) upon its return to the depot will be
+   smaller than 20%.
+2. Bus needs to match the bus type necessary for the trip (standard, articulated)
+3. the charging station. It is not possible to charge buses at any other level between 0 and 150 kW.
+   An additional power consumption occurs during the preconditioning time. This is the electrical heating of the bus before it leaves the depot. It is assumed that the bus needs to heat for X minutes( 2hours at -15degree temp in the article ) prior to its departure if it was parked at the depot for longer than two hours
 
+Charging and preconditioning:
 
-# TODO:
+- Before electric buses are going into daily public transport service, energy-consuming activities like heating the bus interior should be done at the bus depot while the bus is still connected to the grid
+- Preconditioning blocks are fixed in time and cannot be moved. Charging blocks can be freely moved in the time window between the arrival and departure time.
+- Approximately half an hour for pre-conditioning.
 
-install POSTGRESQL on docker
-
-change DATABASES file in team_projekt/settings.py to add POSTGRESQL db
+1. This algorithm uses a simple greedy logic. It defines a limit for the maximum allowed height t_max.The algorithm chooses the charging intervals for each bus, so that the 𝐻_max <= t_max .The limit t_max is reduced iteratively as long as it is possible to schedule all charging jobs. The smallest limit for which the algorithm manages to schedule all jobs is considered the minimum peak demand.
+2. Before executing the algorithm, the following steps are required:
+   - step1: Schedule all preconditioning jobs(Based or departure times, each bus need x amount of time before departing, changeable as the depot manager wishes)
+   - step2: Calculate all possible charging intervals for n first buses to leave buses ( with n= number of charging ports ) and write them into tuples p
+   - step3: Organize all buses ascending by the arrival time
+   - step4: Initialize the limit t_max = c\*number of buses to charge (with c= curtailment factor (The curtailment factor c is a limit for the number of buses that can charge simultaneously without affecting the charging process itself. An example that for 127 buses at the depot, the curtailment factor is 54%, meaning the grid wants to spend a charging capacity of 68 buses simultaneously. t_max is therefore initialized with c=054))
