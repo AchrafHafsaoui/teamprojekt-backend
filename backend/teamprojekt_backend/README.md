@@ -69,7 +69,7 @@ Route assigning:
    smaller than 20%.
 2. Bus needs to match the bus type necessary for the trip (standard, articulated)
 3. the charging station. It is not possible to charge buses at any other level between 0 and 150 kW.
-   An additional power consumption occurs during the preconditioning time. This is the electrical heating of the bus before it leaves the depot. It is assumed that the bus needs to heat for X minutes( 2hours at -15degree temp in the article ) prior to its departure if it was parked at the depot for longer than two hours
+   An additional power consumption occurs during the preconditioning time. This is the electrical heating of the bus before it leaves the depot. It is assumed that the bus needs to heat for X minutes( 2hours at -15degree temp and 15 mins at 28degree ) prior to its departure if it was parked at the depot for longer than two hours
 
 Charging and preconditioning:
 
@@ -77,9 +77,28 @@ Charging and preconditioning:
 - Preconditioning blocks are fixed in time and cannot be moved. Charging blocks can be freely moved in the time window between the arrival and departure time.
 - Approximately half an hour for pre-conditioning.
 
-1. This algorithm uses a simple greedy logic. It defines a limit for the maximum allowed height t_max.The algorithm chooses the charging intervals for each bus, so that the 𝐻_max <= t_max .The limit t_max is reduced iteratively as long as it is possible to schedule all charging jobs. The smallest limit for which the algorithm manages to schedule all jobs is considered the minimum peak demand.
-2. Before executing the algorithm, the following steps are required:
-   - step1: Schedule all preconditioning jobs(Based or departure times, each bus need x amount of time before departing, changeable as the depot manager wishes)
-   - step2: Calculate all possible charging intervals for n first buses to leave buses ( with n= number of charging ports ) and write them into tuples p
-   - step3: Organize all buses ascending by the arrival time
-   - step4: Initialize the limit t_max = c\*number of buses to charge (with c= curtailment factor (The curtailment factor c is a limit for the number of buses that can charge simultaneously without affecting the charging process itself. An example that for 127 buses at the depot, the curtailment factor is 54%, meaning the grid wants to spend a charging capacity of 68 buses simultaneously. t_max is therefore initialized with c=054))
+1#PRECONDITIONING:
+
+# Fetch all departures
+
+# Schedule all preconditioning orders
+
+# Calculate §bus for all buses in Buses (with §b= arrival_time - departure_time - length_of_charging)
+
+# Arrange Buses ascending by §b
+
+# Initialize i=1
+
+#### If i <= n:
+
+        # bus = Buses(i)
+        # Calculate Pbus
+        # Calculate Hmax for all charging intervals in range Pbus (Hmax i peak demand in a certain time)
+        # Choose Cbus as a tuple of charging intervals from P bus with the least Hmax
+        # If |Cbus| > 1
+            # Redefine Cbus as a tuple of charging intervals from Cbus with the least Hinterval
+            # If |Cbus| > 1
+                # Redefine Cbus as the charging interval from Cbus with the earliest charging start s
+    # C bus is the chosen charging interva for bus
+
+# i += 1

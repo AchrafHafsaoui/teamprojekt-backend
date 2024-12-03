@@ -1,51 +1,42 @@
-from django.db import models
+import polars as pl
 
-# Create your models(database models) here.
+file_path = 'buses.parquet'
 
-from sqlalchemy import Column, Integer, String, Float, create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+# Define the Bus class
+class Bus:
+    def __init__(self, vehicle_type, license_plate, date_of_purchase, electric_capacity, seat_capacity, state_of_charge, status):
+        self.vehicle_type = vehicle_type
+        self.license_plate = license_plate
+        self.date_of_purchase = date_of_purchase
+        self.electric_capacity = electric_capacity
+        self.seat_capacity = seat_capacity
+        self.state_of_charge = state_of_charge
+        self.status = status
 
-Base = declarative_base()
+    @staticmethod
+    def get(license_plate):
+        # Retrieve a bus from the Parquet file by license_plate
+        buses = pl.scan_parquet(file_path)
+        buses = buses.filter(pl.col("license_plate") == license_plate).collect()
+        print(buses)
 
-# TODO : add a joint table
-class Vehicle(Base):
-    __tablename__ = 'vehicles'
+    def save(self):
+        # Placeholder for save logic
+        pass
 
-    vehicle_type = Column(String, nullable=False)  # Used for polymorphism
-    license_plate = Column(String, unique=True, primary_key=True, nullable=False)
-    date_of_purchase = Column(String, nullable=False)
-    electric_capacity = Column(Float, nullable=False)
-    state_of_charge = Column(Float, nullable=False)
-    status = Column(String, nullable=False)
-    distance_left = Column(Float, nullable=True)
-    station_number = Column(Integer, nullable=True)
-    charging_point = Column(Integer, nullable=True)
-    coming_from = Column(String, nullable=True)
-    going_to = Column(String, nullable=True)
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'vehicle',  # Identity for the base class
-        'polymorphic_on': vehicle_type      # Column storing type info
-    }
-
-class Bus(Vehicle):
-    seat_capacity = Column(Integer, nullable=False)
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'bus'      # Identity for Bus
-    }
+    @staticmethod
+    def delete(license_plate):
+        # Placeholder for delete logic
+        pass
 
 
-
-class Station(Base):
-    __tablename__ = 'stations'
-
-    number = Column(Integer, unique=True, primary_key=True)
-    electric_capacity = Column(Float, nullable=False)
-    state_of_charge = Column(Float, nullable=False)
-    status = Column(String, nullable=False)
-    ocupied_stations = Column(String, nullable=False)
-
-
+# Define the Station class
+class Station:
+    def __init__(self, number, electric_capacity, state_of_charge, status, occupied_stations):
+        self.number = number
+        self.electric_capacity = electric_capacity
+        self.state_of_charge = state_of_charge
+        self.status = status
+        self.occupied_stations = occupied_stations
 
 
