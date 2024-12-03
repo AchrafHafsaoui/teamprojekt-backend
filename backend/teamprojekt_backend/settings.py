@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "app"
+    'rest_framework',
+    'app',
+    'busMonitoring'
 ]
 
 MIDDLEWARE = [
@@ -76,10 +78,15 @@ WSGI_APPLICATION = 'teamprojekt_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'bus_charging_monitoring',  # Database name
+        'USER': 'postgres',             # Database user
+        'PASSWORD': 'Achraf2002',      # User's password
+        'HOST': '127.0.0.1',               # Database host
+        'PORT': '5432',                    # PostgreSQL port
     }
 }
+
 
 
 # Password validation
