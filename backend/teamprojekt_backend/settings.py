@@ -79,14 +79,16 @@ WSGI_APPLICATION = 'teamprojekt_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bus_charging_monitoring',  # Database name
-        'USER': 'postgres',             # Database user
-        'PASSWORD': 'Achraf2002',      # User's password
-        'HOST': '127.0.0.1',               # Database host
-        'PORT': '5432',                    # PostgreSQL port
+        'NAME': 'bus_monitoring',                  # Database name
+        'USER': 'bus_monitoring_owner',            # Username
+        'PASSWORD': 's0Bcygqd8HUY',                # Password
+        'HOST': 'ep-frosty-breeze-a2ecjys1.eu-central-1.aws.neon.tech',  # Host
+        'PORT': '5432',                            # Default PostgreSQL port
+        'OPTIONS': {
+            'sslmode': 'require',                  # Enforce SSL for secure connection
+        },
     }
 }
-
 
 
 # Password validation

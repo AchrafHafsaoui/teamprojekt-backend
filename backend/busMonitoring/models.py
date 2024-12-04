@@ -3,6 +3,8 @@ from django.db import models
 class ElectricBus(models.Model):
     # Define the attributes for the bus
     vehicle_type = models.CharField(max_length=50)  # Type of vehicle
+    vehicle_name = models.CharField(null=True, max_length=50)  # Type of vehicle
+
     bus_id = models.CharField(max_length=50, unique=True)  # Unique bus ID
     battery = models.FloatField()  # Battery level as a percentage
     charging_start = models.DateTimeField(null=True, blank=True)  # Charging start time, nullable
