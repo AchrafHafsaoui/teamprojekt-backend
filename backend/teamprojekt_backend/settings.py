@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'app',
-    'busMonitoring'
+    'busMonitoring',
+    'charging_stations'
 ]
 
 MIDDLEWARE = [

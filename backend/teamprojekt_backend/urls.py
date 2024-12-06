@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('app.urls')),
     path('', include('busMonitoring.urls')),
+    path('', include('charging_stations.urls')),
 ]
 

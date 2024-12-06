@@ -21,3 +21,6 @@ class ElectricBus(models.Model):
 
     def __str__(self):
         return f"{self.bus_id} - {self.status}"
+
+
+
