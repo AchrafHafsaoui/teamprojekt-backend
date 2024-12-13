@@ -1,0 +1,31 @@
+- add user: [
+    POST: http://127.0.0.1:8000/api/users/add_user/ ,
+    body {
+        username, email, password
+    },
+    res{
+        'id',
+        'username',
+        'email',
+        'role',
+    }]
+
+- login: [
+    POST: http://127.0.0.1:8000/api/users/login/ 
+    body {
+        'email', 
+        'password'
+    },
+    res{
+        'access',
+        'refresh'
+    }]
+
+- refresh access token: [
+    POST: http://127.0.0.1:8000/api/users/access_token/refresh/,
+    body {
+        'refresh'
+    },
+    res{
+        'access'
+    }]

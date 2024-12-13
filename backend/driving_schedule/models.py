@@ -2,8 +2,6 @@ from django.db import models
 
 class DrivingSchedule(models.Model):
     bus_id = models.CharField(max_length=10)  # Unique identifier for the bus
-    driver_name = models.CharField(max_length=100)  # Name of the driver
-    route_id = models.CharField(max_length=10)  # Route identifier
     departure_time = models.DateTimeField()  # Scheduled departure time
     arrival_time = models.DateTimeField()  # Scheduled arrival time
     created_at = models.DateTimeField(auto_now_add=True)  # Auto-record creation time
