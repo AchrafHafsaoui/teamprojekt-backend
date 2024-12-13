@@ -22,6 +22,7 @@ urlpatterns = [
     path('', include('app.urls')),
     path('', include('busMonitoring.urls')),
     path('', include('charging_stations.urls')),
+    path('',include('driving_schedule.urls')),
     path('api/auth/', include('authentication.urls')),
 ]
 

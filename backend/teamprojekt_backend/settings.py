@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'authentication',
     'app',
     'busMonitoring',
-    'charging_stations'
+    'charging_stations',
+    'driving_schedule'
 ]
 
 MIDDLEWARE = [
