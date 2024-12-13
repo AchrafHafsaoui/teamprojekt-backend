@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AuthenticationConfig(AppConfig):
+class TokenManageConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'authentication'
+    name = 'token_manage'
