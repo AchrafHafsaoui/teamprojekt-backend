@@ -1,8 +1,12 @@
 # driving_schedule/views.py
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import DrivingSchedule
-from .serializers import DrivingScheduleSerializer
+from .models import DrivingSchedule, LocationType
+from .serializers import DrivingScheduleSerializer, LocationTypeSerializer
+
+class LocationTypeViewSet(ModelViewSet):
+    queryset = LocationType.objects.all()
+    serializer_class = LocationTypeSerializer
 
 class DrivingScheduleViewSet(ModelViewSet):
     queryset = DrivingSchedule.objects.all()
