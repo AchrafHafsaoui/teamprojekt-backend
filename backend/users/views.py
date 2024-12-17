@@ -39,8 +39,9 @@ class AddUserView(APIView):
 
 class LoginView(APIView):
     def post(self,request):
-        serializer = LoginSerializer(data=request.data)
         print(f"Attempting login with email: {request.data.get('email')} and password: {request.data.get('password')}")
+        print(f"data: {request.data}")
+        serializer = LoginSerializer(data=request.data)
         user = User.objects.filter(email=request.data.get('email')).first()
         print(f"user: {user.email}")
         if serializer.is_valid():
@@ -49,6 +50,7 @@ class LoginView(APIView):
                 password=serializer.validated_data['password']
             )
             if user:
+                print("success")
                 refresh = RefreshToken.for_user(user)
                 return Response({
                         "access": str(refresh.access_token),
