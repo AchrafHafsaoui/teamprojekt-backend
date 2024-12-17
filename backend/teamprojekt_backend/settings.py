@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'busMonitoring',
     'charging_stations',
     'users',
-    "testapp",
+    'testapp',
+    'driving_schedule'
 ]
 
 MIDDLEWARE = [
