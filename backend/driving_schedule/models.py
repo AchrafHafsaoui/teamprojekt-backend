@@ -3,10 +3,7 @@ from busMonitoring.models import ElectricBus
 
 class LocationType(models.Model):
     basis_version = models.IntegerField()  # Version number
-    type_number = models.IntegerField()  # Type ID
-    short_code = models.CharField(max_length=8)  # Abbreviation (e.g., "HP", "OM")
     description = models.CharField(max_length=60)  # Full description (e.g., "Haltepunkt")
-
     def __str__(self):
         return f"{self.short_code} - {self.description}"
     

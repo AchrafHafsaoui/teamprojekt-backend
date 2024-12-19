@@ -9,4 +9,4 @@ class DrivingScheduleSerializer(serializers.ModelSerializer):
 class LocationTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LocationType
-        fields = ["id", "basis_version", "type_number", "short_code", "description"]
+        fields = ["id","short_code", "description"]
