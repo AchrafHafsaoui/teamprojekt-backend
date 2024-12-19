@@ -20,12 +20,20 @@ class DrivingSchedule(models.Model):
     )
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
-    location_name = models.CharField(max_length=100, null=True, blank=True)
-    location_type = models.ForeignKey(
-        LocationType, 
-        on_delete=models.CASCADE, 
-        related_name="schedules", 
-        null=True, 
+    dep_location_name = models.CharField(max_length=100, null=True, blank=True)
+    arr_location_name = models.CharField(max_length=100, null=True, blank=True)
+    departure_location = models.ForeignKey(
+        LocationType,
+        on_delete=models.CASCADE,
+        related_name="departure_schedules",
+        null=True,
+        blank=True
+    )
+    arrival_location = models.ForeignKey(
+        LocationType,
+        on_delete=models.CASCADE,
+        related_name="arrival_schedules",
+        null=True,
         blank=True
     )
 
