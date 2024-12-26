@@ -5,8 +5,8 @@ from .models import DrivingSchedule, LocationType
 class DrivingScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = DrivingSchedule
-        fields = ['id', 'bus', 'departure_time', 'arrival_time','departure_location' ,'dep_location_name' , 'arrival_location', 'arr_location_name']
+        fields = ['id', 'bus', 'departure_time', 'arrival_time','departure_location' , 'arrival_location']
 class LocationTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LocationType
-        fields = ["id","short_code", "description"]
+        fields = ["id", "location_name", "description"]
