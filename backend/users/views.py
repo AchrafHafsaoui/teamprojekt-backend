@@ -1,3 +1,4 @@
+import jwt
 from token_manage.tokens_utils import validate_access_token
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -39,11 +40,8 @@ class AddUserView(APIView):
 
 class LoginView(APIView):
     def post(self,request):
-        print(f"Attempting login with email: {request.data.get('email')} and password: {request.data.get('password')}")
-        print(f"data: {request.data}")
         serializer = LoginSerializer(data=request.data)
         user = User.objects.filter(email=request.data.get('email')).first()
-        print(f"user: {user.email}")
         if serializer.is_valid():
             user = authenticate(
                 username=serializer.validated_data['email'],
@@ -77,3 +75,38 @@ class RefreshAccessTokenView(APIView):
 
         except Exception as e:
             raise AuthenticationFailed("Invalid or expired refresh token")
+        
+
+class IsAuthView(APIView):
+    def post(self, request):
+        access_token = request.data.get('access')
+        min_required_role = request.data.get('role')
+        if not access_token or not min_required_role:
+            return Response(
+                {"detail": "Access token and role are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            payload = AccessToken(access_token)
+            user_id = payload['user_id']
+            print(f"payload: {user_id}")
+            if not user_id:
+                raise AuthenticationFailed("Invalid token: User ID not found")
+                
+                # Get the user from the database using the extracted user_id
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            user_role = user.role
+            # Validate token and role
+            is_valid, message = validate_access_token(access_token, user_role, int(min_required_role))
+            if not is_valid:
+                return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
+
+                # Logic for authorized access
+            return Response({"message": "Authorized access"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

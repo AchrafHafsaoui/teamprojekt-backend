@@ -21,7 +21,7 @@ def validate_access_token(access_token: str, user_role: str, required_role: str)
             if exp_datetime < token.current_time:
                 return False, "Access token has expired"
 
-        if user_role != required_role:
+        if user_role < required_role:
             return False, f"Access denied: role '{user_role}' does not match required role '{required_role}'"
 
         return True, "Access granted"

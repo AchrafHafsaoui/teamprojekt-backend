@@ -29,3 +29,14 @@
     res{
         'access'
     }]
+
+- check if the user is authorized: [
+    POST: http://127.0.0.1:8000/api/users/is_auth/,
+    body {
+        'access',
+        'role'
+    },
+    res{
+        'message'
+    }
+]
