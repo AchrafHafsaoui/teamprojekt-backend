@@ -13,15 +13,10 @@ class LocationTypeSerializer(serializers.ModelSerializer):
         fields = ["location_name", "description"]
 
 class DrivingScheduleSerializer(serializers.ModelSerializer):
-    # Input fields
-    departure_location = serializers.PrimaryKeyRelatedField(queryset=LocationType.objects.all())
-    arrival_location = serializers.PrimaryKeyRelatedField(queryset=LocationType.objects.all())
-    bus = serializers.PrimaryKeyRelatedField(queryset=ElectricBus.objects.all())
-
-    # Output fields
+    # Output fields for location names
     departure_location_name = serializers.SerializerMethodField()
     arrival_location_name = serializers.SerializerMethodField()
-    bus_details = ElectricBusSerializer(source="bus", read_only=True)
+    bus = ElectricBusSerializer(read_only=True)  # Update to include bus details directly
 
     def get_departure_location_name(self, obj):
         return obj.departure_location.location_name if obj.departure_location else None
@@ -32,7 +27,8 @@ class DrivingScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = DrivingSchedule
         fields = [
-            'id', 'bus', 'bus_details', 'departure_time', 'arrival_time',
+            'id', 'bus', 'departure_time', 'arrival_time',
             'departure_location', 'departure_location_name',
             'arrival_location', 'arrival_location_name'
         ]
+
