@@ -48,7 +48,6 @@ class LoginView(APIView):
                 password=serializer.validated_data['password']
             )
             if user:
-                print("success")
                 refresh = RefreshToken.for_user(user)
                 return Response({
                         "access": str(refresh.access_token),
@@ -80,7 +79,9 @@ class RefreshAccessTokenView(APIView):
 class IsAuthView(APIView):
     def post(self, request):
         access_token = request.data.get('access')
+        print(f"Access Token: {access_token}")
         min_required_role = request.data.get('role')
+        print(f"min_required_role: {min_required_role}")
         if not access_token or not min_required_role:
             return Response(
                 {"detail": "Access token and role are required"},
@@ -89,23 +90,19 @@ class IsAuthView(APIView):
         try:
             payload = AccessToken(access_token)
             user_id = payload['user_id']
-            print(f"payload: {user_id}")
             if not user_id:
                 raise AuthenticationFailed("Invalid token: User ID not found")
                 
-                # Get the user from the database using the extracted user_id
             try:
                 user = User.objects.get(id=user_id)
             except User.DoesNotExist:
                 return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
             
             user_role = user.role
-            # Validate token and role
             is_valid, message = validate_access_token(access_token, user_role, int(min_required_role))
+            
             if not is_valid:
                 return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
-
-                # Logic for authorized access
             return Response({"message": "Authorized access"}, status=status.HTTP_200_OK)
 
         except Exception as e:
