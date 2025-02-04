@@ -48,6 +48,7 @@ class LoginView(APIView):
                 password=serializer.validated_data['password']
             )
             if user:
+                print(f"role: {user.role}")
                 refresh = RefreshToken.for_user(user)
                 return Response({
                         "access": str(refresh.access_token),
