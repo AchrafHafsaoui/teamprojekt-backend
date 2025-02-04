@@ -1,4 +1,3 @@
-from django.http import JsonResponse
 import jwt
 from token_manage.tokens_utils import validate_access_token
 from rest_framework.views import APIView
@@ -50,30 +49,17 @@ class LoginView(APIView):
             )
             if user:
                 refresh = RefreshToken.for_user(user)
-                access_token = str(refresh.access_token)
-
-                response = JsonResponse({
-                    "access": access_token,  
+                return Response({
+                        "access": str(refresh.access_token),
+                        "refresh": str(refresh),
                 }, status=status.HTTP_200_OK)
-
-                response.set_cookie(
-                    key="refreshToken",  
-                    value=str(refresh),  
-                    httponly=True,       
-                    secure=True,         
-                    samesite='Strict',   
-                    max_age=6 * 60 * 60,  
-                )
-                return response
             return Response({"error": "Invalid credentials"}, status=401)
         return Response({"error": "creds missing"}, status=401)
                 
 
 class RefreshAccessTokenView(APIView):
     def post(self, request):
-        refresh_token = request.COOKIES.get('refreshToken')
-        
-        print(f"reftkn: {refresh_token}")
+        refresh_token = request.data.get('refresh')
         if not refresh_token:
             return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -93,7 +79,9 @@ class RefreshAccessTokenView(APIView):
 class IsAuthView(APIView):
     def post(self, request):
         access_token = request.data.get('access')
+        print(f"Access Token: {access_token}")
         min_required_role = request.data.get('role')
+        print(f"min_required_role: {min_required_role}")
         if not access_token or not min_required_role:
             return Response(
                 {"detail": "Access token and role are required"},

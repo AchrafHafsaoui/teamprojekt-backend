@@ -86,9 +86,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',  # Your frontend's URL
     'http://127.0.0.1:5173',  # Optional, if you use 127.0.0.1
 ]
-CORS_ALLOW_CREDENTIALS = True  # Allow cookies, if needed
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+
 
 ROOT_URLCONF = 'teamprojekt_backend.urls'
 
