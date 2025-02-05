@@ -14,14 +14,14 @@ class AddUserView(APIView):
     def post(self,request):
         if request.method == 'POST':
             req = request.data
-            token = AccessToken(req.get('token'))
+            token = AccessToken(req.get('access'))
             user_id = token['user_id']
             try:
                 user = User.objects.get(id=user_id)
             except User.DoesNotExist:
                 return Response({"error": "The user that wants to add a user is not found"}, status=status.HTTP_404_NOT_FOUND)
             user_role = user.role  
-            required_role = "admin"
+            required_role = 100
             is_valid, message = validate_access_token(req.get('token'), user_role,required_role)
             if is_valid:
                 serializer = UserSerializer(data=req)
@@ -29,7 +29,7 @@ class AddUserView(APIView):
                     user = serializer.save()
                     return Response({
                         'id': user.id,
-                        'username': user.username,
+                        'username': user.email,
                         'email': user.email,
                         'role': user.role,
                     }, status=status.HTTP_201_CREATED)
