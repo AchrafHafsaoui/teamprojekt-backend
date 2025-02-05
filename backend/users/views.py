@@ -10,6 +10,39 @@ from .serializers import UserSerializer, LoginSerializer
 from .models import User
 
 
+class GetUsersView(APIView):
+    def post(self,request):
+        if request.method == 'POST':
+            req = request.data
+            if req.get('access'):
+                token = AccessToken(req.get('access'))
+                print(f"Access Token: {req.get('access')}")
+                user_id = token['user_id']
+                try:
+                    user = User.objects.get(id=user_id)
+                except User.DoesNotExist:
+                    return Response({"error": "The user is not found"}, status=status.HTTP_404_NOT_FOUND)
+                user_role = user.role  
+                required_role = 100
+                is_valid, message = validate_access_token(req.get('token'), user_role,required_role)
+                if is_valid:
+                    users = User.objects.all()
+                    user_data = [
+                        { 
+                            "id": user.id,
+                            "username": user.username,
+                            "email": user.email,
+                            "role": user.role
+                        }
+                        for user in users
+                    ]
+                    return Response(user_data, status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
+            else: return Response({"error": "no access token found"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
 class AddUserView(APIView):
     def post(self,request):
         if request.method == 'POST':
@@ -80,9 +113,8 @@ class RefreshAccessTokenView(APIView):
 class IsAuthView(APIView):
     def post(self, request):
         access_token = request.data.get('access')
-        print(f"Access Token: {access_token}")
         min_required_role = request.data.get('role')
-        print(f"min_required_role: {min_required_role}")
+        #print(f"min_required_role: {min_required_role}")
         if not access_token or not min_required_role:
             return Response(
                 {"detail": "Access token and role are required"},
