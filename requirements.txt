@@ -1,6 +1,11 @@
 annotated-types==0.7.0
+Django==5.1.6 
+djangorestframework==3.15.2
+djangorestframework-simplejwt==5.4.0 
+django-cors-header==4.7.0
 anyio==4.6.2.post1
 click==8.1.7
+ polars==1.22.0
 colorama==0.4.6
 fastapi==0.115.5
 greenlet==3.1.1
@@ -14,3 +19,5 @@ SQLAlchemy==2.0.36
 starlette==0.41.3
 typing_extensions==4.12.2
 uvicorn==0.32.0
+entsoe-py==0.6.18 
+pandas==2.2.3

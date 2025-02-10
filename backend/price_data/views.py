@@ -1,19 +1,11 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .entsoe_api import EntsoeDataFetcher
+from django.http import JsonResponse
+from .entsoe_api import EntsoeDataFetcher  # Import your class
 
-
-class EntsoeDataView(APIView):
-    def get(self, request):
-        fetcher = EntsoeDataFetcher()
-        country_code = 'DE_LU' 
-        try:
-            prices = fetcher.get_day_ahead_prices(country_code)
-            return Response(prices.to_dict(), status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
-
-
+def get_entsoe_data(request):
+    fetcher = EntsoeDataFetcher()
+    country_code = 'DE_LU'  # You can modify this to accept user input
+    try:
+        prices = fetcher.get_day_ahead_prices(country_code)
+        return JsonResponse(prices.to_dict(), safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
