@@ -24,6 +24,6 @@ urlpatterns = [
     path('', include('charging_stations.urls')),
     path('',include('driving_schedule.urls')),
     path('api/users/', include('users.urls')),
-    path('api/test/', include('testapp.urls'))
+    path('api/', include('price_data.urls')),  # Correct usage of include()
 ]
 
