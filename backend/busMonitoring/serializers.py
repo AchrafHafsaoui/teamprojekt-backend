@@ -5,3 +5,5 @@ class ElectricBusSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElectricBus
         fields = '__all__'
+
+    
