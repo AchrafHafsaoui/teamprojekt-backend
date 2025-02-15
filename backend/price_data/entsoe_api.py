@@ -14,7 +14,9 @@ class EntsoeDataFetcher:
     def get_day_ahead_prices(self, country_code):
         start = pd.Timestamp(self.start_date, tz='Europe/Brussels')
         end = pd.Timestamp(self.end_date, tz='Europe/Brussels')
-        return self.client.query_day_ahead_prices(country_code, start=start, end=end)
+        df=self.client.query_day_ahead_prices(country_code, start=start, end=end)
+        prices_dict = {str(timestamp): price for timestamp, price in df.items()} 
+        return prices_dict
 
 
 # Usage
