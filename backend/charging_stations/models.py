@@ -11,6 +11,7 @@ class Station(models.Model):
     availability = models.CharField(max_length=12, choices=AVAILABILITY_CHOICES)  # Current status
     charging_power = models.FloatField()  # Current charging power in kW
     max_power = models.FloatField()  # Maximum charging power in kW
+    charging_points = models.JSONField(default=list)  # Store full bus objects as JSON
     created_at = models.DateTimeField(auto_now_add=True)  # Auto-record creation time
     updated_at = models.DateTimeField(auto_now=True)  # Auto-record last update time
 
