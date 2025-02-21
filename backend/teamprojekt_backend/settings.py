@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'users',
     'testapp',
     'driving_schedule',
-    'price_data'
+    'price_data',
+    'Parking'
 ]
 
 MIDDLEWARE = [

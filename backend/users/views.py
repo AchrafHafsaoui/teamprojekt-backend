@@ -24,7 +24,8 @@ class GetUsersView(APIView):
                     return Response({"error": "The user is not found"}, status=status.HTTP_404_NOT_FOUND)
                 user_role = user.role  
                 required_role = 100
-                is_valid, message = validate_access_token(req.get('token'), user_role,required_role)
+                accessToken = req.get('access')
+                is_valid, message = validate_access_token(accessToken, user_role,required_role)
                 if is_valid:
                     users = User.objects.all()
                     user_data = [
@@ -55,7 +56,7 @@ class AddUserView(APIView):
                 return Response({"error": "The user that wants to add a user is not found"}, status=status.HTTP_404_NOT_FOUND)
             user_role = user.role  
             required_role = 100
-            is_valid, message = validate_access_token(req.get('token'), user_role,required_role)
+            is_valid, message = validate_access_token(req.get('access'), user_role,required_role)
             if is_valid:
                 serializer = UserSerializer(data=req)
                 if serializer.is_valid():
@@ -114,7 +115,6 @@ class IsAuthView(APIView):
     def post(self, request):
         access_token = request.data.get('access')
         min_required_role = request.data.get('role')
-        #print(f"min_required_role: {min_required_role}")
         if not access_token or not min_required_role:
             return Response(
                 {"detail": "Access token and role are required"},
@@ -122,7 +122,7 @@ class IsAuthView(APIView):
             )
         try:
             payload = AccessToken(access_token)
-            user_id = payload['user_id']
+            user_id = payload['user_id'] 
             if not user_id:
                 raise AuthenticationFailed("Invalid token: User ID not found")
                 
