@@ -16,7 +16,8 @@ class StationList(ModelViewSet):
 
 @api_view(['POST'])
 def add_charging_station(request):
-    serializer = StationSerializer(data=request.data)
+    data = request.data.copy()  # Create a mutable copy of request data
+    serializer = StationSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
