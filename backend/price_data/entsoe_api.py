@@ -12,16 +12,38 @@ class EntsoeDataFetcher:
         self.end_date = self.start_date + timedelta(days=1)
         
     def get_day_ahead_prices(self, country_code):
-        start = pd.Timestamp(self.start_date, tz='Europe/Brussels')
-        end = pd.Timestamp(self.end_date, tz='Europe/Brussels')
-        df=self.client.query_day_ahead_prices(country_code, start=start, end=end)
-        prices_dict = {str(timestamp): price for timestamp, price in df.items()} 
-        return prices_dict
+        # Calculate yesterday's date range
+        yesterday_start = self.start_date - timedelta(days=1)
+        yesterday_end = self.start_date
+
+        # Convert to timestamps with timezone
+        start_yesterday = pd.Timestamp(yesterday_start, tz='Europe/Brussels')
+        end_yesterday = pd.Timestamp(yesterday_end, tz='Europe/Brussels')
+
+        # Query day-ahead prices for yesterday
+        df_yesterday = self.client.query_day_ahead_prices(country_code, start=start_yesterday, end=end_yesterday)
+
+        # Calculate today's date range
+        start_today = pd.Timestamp(self.start_date, tz='Europe/Brussels')
+        end_today = pd.Timestamp(self.end_date, tz='Europe/Brussels')
+
+        # Query day-ahead prices for today
+        df_today = self.client.query_day_ahead_prices(country_code, start=start_today, end=end_today)
+
+        # Convert both results to lists of dictionaries
+        prices_yesterday = [{"timestamp": str(timestamp), "price": price} for timestamp, price in df_yesterday.items()]
+        prices_today = [{"timestamp": str(timestamp), "price": price} for timestamp, price in df_today.items()]
+
+        # Return the data as a dictionary
+        return {
+            "yesterday": prices_yesterday,
+            "today": prices_today
+        }
 
 
 # Usage
 if __name__ == "__main__":
     fetcher = EntsoeDataFetcher()
-    country_code = 'DE_LU'
-    prices = fetcher.get_day_ahead_prices(country_code)
-    print(prices)
+    country_code = 'DE_LU'  # Example country code for Germany/Luxembourg
+    data = fetcher.get_day_ahead_prices(country_code)
+    print(data)
