@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -78,7 +77,7 @@ class GetAllParkings(APIView):
 
             if is_valid:
                 # Fetch all parkings created by the authenticated user
-                parkings = Parking.objects.filter(created_by=user)
+                parkings = Parking.objects.all()
 
                 # Serialize the data
                 serializer = ParkingSerializer(parkings, many=True)

@@ -1,4 +1,5 @@
 import jwt
+from login_logs.utils import create_login_log
 from token_manage.tokens_utils import validate_access_token
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -83,6 +84,7 @@ class LoginView(APIView):
             )
             if user:
                 print(f"role: {user.role}")
+                create_login_log(user)
                 refresh = RefreshToken.for_user(user)
                 return Response({
                         "access": str(refresh.access_token),

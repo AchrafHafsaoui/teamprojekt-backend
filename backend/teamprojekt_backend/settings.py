@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
     'app',
     'busMonitoring',
     'charging_stations',
@@ -49,7 +50,8 @@ INSTALLED_APPS = [
     'testapp',
     'driving_schedule',
     'price_data',
-    'Parking'
+    'Parking',
+    'login_logs'
 ]
 
 MIDDLEWARE = [
