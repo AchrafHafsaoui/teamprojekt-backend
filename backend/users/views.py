@@ -10,56 +10,69 @@ from rest_framework.exceptions import AuthenticationFailed
 from .serializers import UserSerializer, LoginSerializer
 from .models import User
 
+def get_access_token_from_header(request):
+    """Helper function to extract the access token from the Authorization header."""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return None
+    return auth_header.split(' ')[1]  # Remove 'Bearer ' prefix
+
 
 class GetUsersView(APIView):
-    def post(self,request):
-        if request.method == 'POST':
-            req = request.data
-            if req.get('access'):
-                token = AccessToken(req.get('access'))
-                print(f"Access Token: {req.get('access')}")
-                user_id = token['user_id']
-                try:
-                    user = User.objects.get(id=user_id)
-                except User.DoesNotExist:
-                    return Response({"error": "The user is not found"}, status=status.HTTP_404_NOT_FOUND)
-                user_role = user.role  
-                required_role = 100
-                accessToken = req.get('access')
-                is_valid, message = validate_access_token(accessToken, user_role,required_role)
-                if is_valid:
-                    users = User.objects.all()
-                    user_data = [
-                        { 
-                            "id": user.id,
-                            "username": user.username,
-                            "email": user.email,
-                            "role": user.role
-                        }
-                        for user in users
-                    ]
-                    return Response(user_data, status=status.HTTP_200_OK)
-                else:
-                    return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
-            else: return Response({"error": "no access token found"}, status=status.HTTP_401_UNAUTHORIZED)
+    def post(self, request):
+        access_token = get_access_token_from_header(request)
+        if not access_token:
+            return Response({"error": "Authorization header with Bearer token is required"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            token = AccessToken(access_token)
+            user_id = token['user_id']
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "The user is not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_role = user.role
+        required_role = 100
+        is_valid, message = validate_access_token(access_token, user_role, required_role)
+        if is_valid:
+            users = User.objects.all()
+            user_data = [
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role
+                }
+                for user in users
+            ]
+            return Response(user_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
 
 
 
 class AddUserView(APIView):
-    def post(self,request):
-        if request.method == 'POST':
-            req = request.data
-            token = AccessToken(req.get('access'))
-            user_id = token['user_id']
+    def post(self, request):
+            access_token = get_access_token_from_header(request)
+            if not access_token:
+                return Response({"error": "Authorization header with Bearer token is required"}, status=status.HTTP_401_UNAUTHORIZED)
+
             try:
+                token = AccessToken(access_token)
+                user_id = token['user_id']
                 user = User.objects.get(id=user_id)
             except User.DoesNotExist:
                 return Response({"error": "The user that wants to add a user is not found"}, status=status.HTTP_404_NOT_FOUND)
-            user_role = user.role  
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+            user_role = user.role
             required_role = 100
-            is_valid, message = validate_access_token(req.get('access'), user_role,required_role)
+            is_valid, message = validate_access_token(access_token, user_role, required_role)
             if is_valid:
-                serializer = UserSerializer(data=req)
+                serializer = UserSerializer(data=request.data)
                 if serializer.is_valid():
                     user = serializer.save()
                     return Response({
@@ -69,29 +82,27 @@ class AddUserView(APIView):
                         'role': user.role,
                     }, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            if not is_valid:
+            else:
                 return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
 
 
 class LoginView(APIView):
-    def post(self,request):
+    def post(self, request):
         serializer = LoginSerializer(data=request.data)
-        user = User.objects.filter(email=request.data.get('email')).first()
         if serializer.is_valid():
             user = authenticate(
                 username=serializer.validated_data['email'],
                 password=serializer.validated_data['password']
             )
             if user:
-                print(f"role: {user.role}")
                 create_login_log(user)
                 refresh = RefreshToken.for_user(user)
                 return Response({
-                        "access": str(refresh.access_token),
-                        "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
                 }, status=status.HTTP_200_OK)
             return Response({"error": "Invalid credentials"}, status=401)
-        return Response({"error": "creds missing"}, status=401)
+        return Response({"error": "Credentials missing"}, status=401)
                 
 
 class RefreshAccessTokenView(APIView):
@@ -115,27 +126,25 @@ class RefreshAccessTokenView(APIView):
 
 class IsAuthView(APIView):
     def post(self, request):
-        access_token = request.data.get('access')
+        access_token = get_access_token_from_header(request)
+        print(access_token)
+        if not access_token:
+            return Response({"detail": "Authorization header with Bearer token is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         min_required_role = request.data.get('role')
-        if not access_token or not min_required_role:
-            return Response(
-                {"detail": "Access token and role are required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        if not min_required_role:
+            return Response({"detail": "Role is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             payload = AccessToken(access_token)
-            user_id = payload['user_id'] 
+            user_id = payload['user_id']
             if not user_id:
                 raise AuthenticationFailed("Invalid token: User ID not found")
-                
-            try:
-                user = User.objects.get(id=user_id)
-            except User.DoesNotExist:
-                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-            
+
+            user = User.objects.get(id=user_id)
             user_role = user.role
             is_valid, message = validate_access_token(access_token, user_role, int(min_required_role))
-            
+
             if not is_valid:
                 return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
             return Response({"message": "Authorized access"}, status=status.HTTP_200_OK)
@@ -146,114 +155,72 @@ class IsAuthView(APIView):
 
 class UpdateInfo(APIView):
     def post(self, request):
-        access_token = request.data.get('access')
-        newEmail= request.data.get('newEmail')
-        newUserName= request.data.get('newUserName')
-        newPwd= request.data.get('newPwd')
-        oldPwd= request.data.get('oldPwd')
+        access_token = get_access_token_from_header(request)
+        if not access_token:
+            return Response({"detail": "Authorization header with Bearer token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not access_token or not oldPwd:
-            return Response(
-                {"detail": "Access token and old password are required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        new_email = request.data.get('newEmail')
+        new_username = request.data.get('newUserName')
+        new_password = request.data.get('newPwd')
+        old_password = request.data.get('oldPwd')
 
-        if not newEmail and not newUserName and not newPwd:
-            return Response(
-                {"detail": "At least one attribute must be provided for update"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        if not old_password:
+            return Response({"detail": "Old password is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not new_email and not new_username and not new_password:
+            return Response({"detail": "At least one attribute must be provided for update"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             payload = AccessToken(access_token)
             user_id = payload['user_id']
-            
-            if not user_id:
-                return Response(
-                    {"detail": "Invalid token"},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
-            # Fetch the user from the database
             user = User.objects.get(id=user_id)
 
-            # Check if the old password is correct
-            if not user.check_password(oldPwd):
-                return Response(
-                    {"detail": "Incorrect old password"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            if not user.check_password(old_password):
+                return Response({"detail": "Incorrect old password"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Update fields if they are provided
-            if newEmail:
-                user.email = newEmail
-            if newUserName:
-                user.username = newUserName
-            if newPwd:
-                user.set_password(newPwd)
+            if new_email:
+                user.email = new_email
+            if new_username:
+                user.username = new_username
+            if new_password:
+                user.set_password(new_password)
 
-            # Save changes
             user.save()
+            return Response({"detail": "User information updated successfully"}, status=status.HTTP_200_OK)
 
-            return Response(
-                {"detail": "User information updated successfully"},
-                status=status.HTTP_200_OK,
-            )
-
-        except jwt.ExpiredSignatureError:
-            return Response(
-                {"detail": "Token has expired"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        except jwt.DecodeError:
-            return Response(
-                {"detail": "Invalid token"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        except User.DoesNotExist:
-            return Response(
-                {"detail": "User not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 
 class UpdateRole(APIView):
     def post(self, request):
-        access_token = request.data.get('access')
-        member_id= request.data.get('member_id')
-        new_role= request.data.get('new_role')
+        access_token = get_access_token_from_header(request)
+        if not access_token:
+            return Response({"error": "Authorization header with Bearer token is required"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if not access_token or not member_id or not new_role:
-            return Response(
-                {"detail": "Access token, member_id and role are required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        member_id = request.data.get('member_id')
+        new_role = request.data.get('new_role')
 
-        token = AccessToken(access_token)
-        user_id = token['user_id']
+        if not member_id or not new_role:
+            return Response({"detail": "Member ID and new role are required"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
+            token = AccessToken(access_token)
+            user_id = token['user_id']
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return Response({"error": "The user that wants to add a user is not found"}, status=status.HTTP_404_NOT_FOUND)
-        user_role = user.role  
+            return Response({"error": "The user that wants to update the role is not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        user_role = user.role
         required_role = 100
-        is_valid, message = validate_access_token(access_token, user_role,required_role)
+        is_valid, message = validate_access_token(access_token, user_role, required_role)
         if is_valid:
             try:
                 member = User.objects.get(id=member_id)
-
                 member.role = new_role
                 member.save()
-
-                return Response(
-                    {"detail": f"User {member.username}'s role updated successfully"},
-                    status=status.HTTP_200_OK,
-                )
-
+                return Response({"detail": f"User {member.username}'s role updated successfully"}, status=status.HTTP_200_OK)
             except User.DoesNotExist:
-                return Response(
-                    {"error": "The user to be updated was not found"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+                return Response({"error": "The user to be updated was not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
